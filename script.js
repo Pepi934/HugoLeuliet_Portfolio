@@ -238,6 +238,27 @@ function closeLightbox() {
     document.getElementById('lightbox').classList.remove('active');
     document.body.classList.remove('lightbox-open');
 }
+
+// Redirige vers l'accueil quand on clique sur "Hugo Leuliet"
+document.querySelector('.name').addEventListener('click', function() {
+    document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+    document.getElementById('default').classList.add('active');
+    window.scrollTo({top: 0, behavior: 'smooth'});
 });
 
+// Découvrir : clic sur une miniature => affiche la rubrique correspondante
+document.querySelectorAll('.discover-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const rubrique = this.getAttribute('data-rubrique');
+        if (rubrique) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById(rubrique);
+            if (target) {
+                target.classList.add('active');
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+    });
+});
+});
 
