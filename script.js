@@ -1,4 +1,53 @@
+// Loader : précharge toutes les images avant d'afficher le site
+function preloadImages(callback) {
+    const images = Array.from(document.images);
+    const extraSrcs = [
+        // Ajoute ici les images chargées dynamiquement ou en JS si besoin
+    ];
+    extraSrcs.forEach(src => {
+        const img = new Image();
+        img.src = src;
+        images.push(img);
+    });
+
+    let loaded = 0;
+    const total = images.length;
+    if (total === 0) callback();
+
+    images.forEach(img => {
+        if (img.complete) {
+            loaded++;
+            if (loaded === total) callback();
+        } else {
+            img.addEventListener('load', () => {
+                loaded++;
+                if (loaded === total) callback();
+            });
+            img.addEventListener('error', () => {
+                loaded++;
+                if (loaded === total) callback();
+            });
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Affiche le loader, masque le contenu principal
+    const loader = document.getElementById('loader');
+    const container = document.querySelector('.container');
+    if (loader && container) {
+        loader.style.display = 'flex';
+        container.style.display = 'none';
+
+        preloadImages(function() {
+            loader.style.opacity = 0;
+            setTimeout(() => {
+                loader.style.display = 'none';
+                container.style.display = '';
+            }, 500);
+        });
+    }
+
     // Menu toggle functionality
     const menuToggle = document.querySelector('.menu-toggle');
     const sidebar = document.querySelector('.sidebar');

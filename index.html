@@ -15,6 +15,11 @@
     </script>
 </head>
 <body>
+    <!-- Loader animé -->
+    <div id="loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Chargement...</div>
+    </div>
     <div class="container">
         <header>
             <h1 class="name" style="cursor:pointer;">Hugo Leuliet</h1>
@@ -343,19 +348,38 @@
                 <!-- Contact -->
                 <div class="content" id="contact">
                     <h2>Contact</h2>
-                    <div class="contact-content">
-                        <div class="contact-info">
-                            <p>Vous trouverez ici différents moyens de me contacter, que ce soit pour une collaboration, pour des questions sur certaines productions ou même des conseils dans la limite de ce que je connais !</p>
-                            <div class="social-links">
-                              <a href="https://www.linkedin.com/in/hugoleuliet/" target="_blank" rel="noopener">
-                                  <i class="fab fa-linkedin"></i>
-                              </a>
-                              <a href="https://www.behance.net/leulieth" target="_blank" rel="noopener">
-                                  <i class="fab fa-behance"></i>
-                              </a>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="contact-content two-columns">
+    <div class="contact-info">
+        <p>Vous trouverez ici différents moyens de me contacter, que ce soit pour une collaboration, pour des questions sur certaines productions ou même des conseils dans la limite de ce que je connais !</p>
+        <div class="social-links">
+            <a href="https://www.linkedin.com/in/hugoleuliet/" target="_blank" rel="noopener">
+                <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://www.behance.net/leulieth" target="_blank" rel="noopener">
+                <i class="fab fa-behance"></i>
+            </a>
+        </div>
+    </div>
+    <form action="https://formspree.io/f/xblyjlry" method="POST" class="contact-form">
+        <label>
+            Prénom et Nom :
+            <input type="text" name="name" required>
+        </label>
+        <label>
+            Adresse mail :
+            <input type="email" name="email" required>
+        </label>
+        <label>
+            Objet :
+            <input type="text" name="subject" required>
+        </label>
+        <label>
+            Message :
+            <textarea name="message" rows="5" required></textarea>
+        </label>
+        <button type="submit">Envoyer</button>
+    </form>
+</div>
                 </div>
             </div>
         </main>
@@ -369,19 +393,7 @@
             <div class="lightbox-caption"></div>
         </div>
     </div>
-
-    <script src="script.js"></script>
-    <script>
-    // Redirige vers l'accueil quand on clique sur "Hugo Leuliet"
-    document.querySelector('.name').addEventListener('click', function() {
-        // Masque tous les contenus
-        document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
-        // Affiche la page d'accueil
-        document.getElementById('default').classList.add('active');
-        // Optionnel : scroll en haut
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    });
-    </script>
+    <script src="script.js"></script> 
 </body>
 </html>
 
