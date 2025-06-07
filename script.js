@@ -37,19 +37,54 @@ function preloadImages(callback) {
 // 2. DOMContentLoaded : Initialisation globale
 // ===========================
 document.addEventListener('DOMContentLoaded', function() {
-    // 2.1 Loader
+    const intro = document.getElementById('intro-animation');
     const loader = document.getElementById('loader');
     const container = document.querySelector('.container');
+
+    // Synchronisation intro + loader
+    let introDone = false;
+    let loaderDone = false;
+
+    function showSite() {
+        if (introDone && loaderDone) {
+            container.style.display = '';
+        }
+    }
+
+    // Intro animée (5s)
+    if (intro && container) {
+        container.style.display = 'none';
+        setTimeout(() => {
+            intro.style.opacity = 0;
+            intro.style.pointerEvents = 'none';
+            setTimeout(() => {
+                intro.style.display = 'none';
+                introDone = true;
+                showSite();
+            }, 700); // correspond à la durée du transition: opacity
+        }, 5000); // 5 secondes d'animation
+    } else {
+        introDone = true;
+    }
+
+    // Loader (max 3s)
     if (loader && container) {
         loader.style.display = 'flex';
-        container.style.display = 'none';
-        preloadImages(function() {
+        let finished = false;
+        function finishLoading() {
+            if (finished) return;
+            finished = true;
             loader.style.opacity = 0;
             setTimeout(() => {
                 loader.style.display = 'none';
-                container.style.display = '';
+                loaderDone = true;
+                showSite();
             }, 500);
-        });
+        }
+        setTimeout(finishLoading, 3000);
+        preloadImages(finishLoading);
+    } else {
+        loaderDone = true;
     }
 
     // 2.2 Menu burger & sidebar responsive
@@ -60,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.toggle('active');
             sidebar.classList.toggle('active');
         });
-        // Fermer la sidebar si clic extérieur
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.sidebar') && !e.target.closest('.menu-toggle')) {
                 menuToggle.classList.remove('active');
@@ -96,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const contentId = this.getAttribute('data-content');
             contents.forEach(content => content.classList.remove('active'));
             document.getElementById(contentId).classList.add('active');
-            // Fermer la sidebar sur mobile
             if (window.innerWidth <= 992 && menuToggle && sidebar) {
                 menuToggle.classList.remove('active');
                 sidebar.classList.remove('active');
@@ -105,6 +138,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 2.5 Lecteurs audio personnalisés
+    function formatTime(sec) {
+        if (isNaN(sec)) return '0:00';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
     document.querySelectorAll('.audio-player').forEach(player => {
         const audio = player.querySelector('.music-player');
         const playBtn = player.querySelector('.play-btn');
@@ -116,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const volumeSlider = player.querySelector('.volume-slider');
         const volumeBtn = player.querySelector('.volume-btn');
 
-        // Play
         playBtn.addEventListener('click', () => {
             document.querySelectorAll('.audio-player audio').forEach(a => {
                 if (a !== audio) {
@@ -131,26 +169,22 @@ document.addEventListener('DOMContentLoaded', function() {
             pauseBtn.classList.remove('hidden');
         });
 
-        // Pause
         pauseBtn.addEventListener('click', () => {
             audio.pause();
             playBtn.classList.remove('hidden');
             pauseBtn.classList.add('hidden');
         });
 
-        // Update progress
         audio.addEventListener('timeupdate', () => {
             const percent = (audio.currentTime / audio.duration) * 100;
             progress.style.width = percent + '%';
             currentTimeEl.textContent = formatTime(audio.currentTime);
         });
 
-        // Set duration
         audio.addEventListener('loadedmetadata', () => {
             durationEl.textContent = formatTime(audio.duration);
         });
 
-        // Seek
         progressBar.addEventListener('click', (e) => {
             const rect = progressBar.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -158,18 +192,15 @@ document.addEventListener('DOMContentLoaded', function() {
             audio.currentTime = percent * audio.duration;
         });
 
-        // Volume
         volumeSlider.addEventListener('input', () => {
             audio.volume = volumeSlider.value;
         });
 
-        // Mute/unmute
         volumeBtn.addEventListener('click', () => {
             audio.muted = !audio.muted;
             volumeBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
         });
 
-        // Reset on end
         audio.addEventListener('ended', () => {
             playBtn.classList.remove('hidden');
             pauseBtn.classList.add('hidden');
@@ -177,15 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
             currentTimeEl.textContent = '0:00';
         });
 
-        // Helper
-        function formatTime(sec) {
-            if (isNaN(sec)) return '0:00';
-            const m = Math.floor(sec / 60);
-            const s = Math.floor(sec % 60).toString().padStart(2, '0');
-            return `${m}:${s}`;
-        }
-
-        // Gérer le changement d'état si l'utilisateur utilise les contrôles natifs
         audio.addEventListener('play', () => {
             playBtn.classList.add('hidden');
             pauseBtn.classList.remove('hidden');
@@ -196,15 +218,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 2.6 Formulaire de contact (alerte)
-    const contactForm = document.querySelector('.contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Message envoyé! Merci pour votre contact.');
-            this.reset();
-        });
-    }
+    // 2.6 Formulaire de contact (alerte) - à désactiver si tu utilises Formspree
+    // const contactForm = document.querySelector('.contact-form');
+    // if (contactForm) {
+    //     contactForm.addEventListener('submit', function(e) {
+    //         e.preventDefault();
+    //         alert('Message envoyé! Merci pour votre contact.');
+    //         this.reset();
+    //     });
+    // }
 
     // 2.7 Smooth scroll pour les liens internes
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -223,11 +245,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 2.8 Dark mode (init, toggle, synchro système)
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
     const htmlElement = document.documentElement;
     if (localStorage.getItem('darkMode') === 'true') {
         htmlElement.classList.add('dark-mode');
     }
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
     if (darkModeToggle) {
         darkModeToggle.addEventListener('click', () => {
             htmlElement.classList.toggle('dark-mode');
@@ -235,11 +257,13 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('darkMode', isDark);
             document.querySelector('.fa-moon').classList.toggle('hidden', isDark);
             document.querySelector('.fa-sun').classList.toggle('hidden', !isDark);
+            setTimeout(updateIntroForMode, 10);
         });
     }
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         if (!localStorage.getItem('darkMode')) {
             htmlElement.classList.toggle('dark-mode', e.matches);
+            setTimeout(updateIntroForMode, 10);
         }
     });
 
@@ -293,6 +317,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Intro animation : adapte image et texte selon le mode
+    function updateIntroForMode() {
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        const introImg = document.getElementById('intro-signature-img');
+        const introText = document.getElementById('intro-text');
+        if (introImg) {
+            introImg.src = isDark ? 'Image/signature/whitesign.png' : 'Image/signature/sign.png';
+        }
+        if (introText) {
+            introText.style.color = isDark ? '#fff' : '#111';
+        }
+    }
+    updateIntroForMode();
 });
 
 // ===========================

@@ -274,11 +274,25 @@ header {
 }
 
 .content {
-    display: none;
-    animation: fadeIn 0.5s ease;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.5s, transform 0.5s;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
 }
 .content.active {
-    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
+}
+.content-wrapper {
+    position: relative;
+    min-height: 400px; /* ou la hauteur souhaitée */
 }
 
 @keyframes fadeIn {
@@ -1016,4 +1030,54 @@ h2::after {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+#intro-animation {
+    position: fixed;
+    z-index: 10000;
+    inset: 0;
+    background: var(--bg-color, #121212);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.7s;
+}
+.intro-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeInUp 1.2s;
+}
+.intro-signature {
+    width: 340px;
+    max-width: 90vw;
+    display: block;
+    margin: 0 auto;
+}
+.intro-text {
+    color: #111;
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    letter-spacing: 1px;
+    text-align: center;
+    transition: color 0.3s;
+}
+.dark-mode .intro-text {
+    color: #fff;
+}
+
+body,
+.container,
+.content-area,
+.contact-info,
+.contact-form,
+.about-content,
+.project-content,
+header,
+.sidebar,
+.lightbox-content,
+.intro-center,
+.intro-text,
+.intro-signature {
+    transition: background 0.4s, color 0.4s, border-color 0.4s;
 }
