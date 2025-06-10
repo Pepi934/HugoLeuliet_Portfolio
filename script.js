@@ -130,6 +130,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const contentId = this.getAttribute('data-content');
             contents.forEach(content => content.classList.remove('active'));
             document.getElementById(contentId).classList.add('active');
+            // Scroll en haut du content-area
+            const contentArea = document.querySelector('.content-area');
+            if (contentArea) {
+                contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+            }
             if (window.innerWidth <= 992 && menuToggle && sidebar) {
                 menuToggle.classList.remove('active');
                 sidebar.classList.remove('active');
@@ -299,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
         nameEl.addEventListener('click', function() {
             document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
             document.getElementById('default').classList.add('active');
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
@@ -312,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const target = document.getElementById(rubrique);
                 if (target) {
                     target.classList.add('active');
-                    window.scrollTo({top: 0, behavior: 'smooth'});
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             }
         });
@@ -323,14 +328,97 @@ document.addEventListener('DOMContentLoaded', function() {
         const isDark = document.documentElement.classList.contains('dark-mode');
         const introImg = document.getElementById('intro-signature-img');
         const introText = document.getElementById('intro-text');
+        const aboutImg = document.getElementById('about-signature-img');
         if (introImg) {
             introImg.src = isDark ? 'Image/signature/whitesign.png' : 'Image/signature/sign.png';
         }
         if (introText) {
             introText.style.color = isDark ? '#fff' : '#111';
         }
+        if (aboutImg) {
+            aboutImg.src = isDark ? 'Image/signature/whitesign.png' : 'Image/signature/sign.png';
+        }
     }
     updateIntroForMode();
+
+    // Music streaming player logic
+    document.querySelectorAll('#glaneurs-musique .music-track').forEach(track => {
+        const audio = track.querySelector('.music-player');
+        const playBtn = track.querySelector('.play-btn');
+        const pauseBtn = track.querySelector('.pause-btn');
+        const volumeSlider = track.querySelector('.volume-slider');
+        const volumeBtn = track.querySelector('.volume-btn');
+        const shareBtn = track.querySelector('.share-btn');
+
+        // Play/pause logic
+        playBtn.addEventListener('click', () => {
+            // Pause all other tracks
+            document.querySelectorAll('#glaneurs-musique .music-player').forEach(a => {
+                if (a !== audio) {
+                    a.pause();
+                    a.currentTime = 0;
+                    const parent = a.closest('.music-track');
+                    if (parent) {
+                        parent.querySelector('.play-btn').classList.remove('hidden');
+                        parent.querySelector('.pause-btn').classList.add('hidden');
+                    }
+                }
+            });
+            audio.play();
+            playBtn.classList.add('hidden');
+            pauseBtn.classList.remove('hidden');
+        });
+        pauseBtn.addEventListener('click', () => {
+            audio.pause();
+            playBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+        });
+        audio.addEventListener('ended', () => {
+            playBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+        });
+
+        // Volume
+        volumeSlider.addEventListener('input', () => {
+            audio.volume = volumeSlider.value;
+        });
+        volumeBtn.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            volumeBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+        });
+
+        // Share
+        shareBtn.addEventListener('click', () => {
+            const url = window.location.href.split('#')[0] + '#glaneurs-musique';
+            if (navigator.share) {
+                navigator.share({
+                    title: document.title,
+                    url: url
+                });
+            } else {
+                navigator.clipboard.writeText(url);
+                shareBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
+                }, 1200);
+            }
+        });
+    });
+
+    document.querySelectorAll('.download-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const href = btn.getAttribute('href');
+            const filename = href.split('/').pop();
+            // Crée un lien temporaire pour forcer le download
+            const a = document.createElement('a');
+            a.href = href;
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            e.preventDefault();
+        });
+    });
 });
 
 // ===========================

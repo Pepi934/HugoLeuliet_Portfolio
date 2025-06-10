@@ -271,6 +271,8 @@ header {
     padding: 6rem 3rem 2rem 3rem;
     transition: all 0.3s ease;
     background-color: var(--bg-color);
+    max-height: 100vh;
+    overflow-y: auto;
 }
 
 .content {
@@ -1064,6 +1066,158 @@ h2::after {
 }
 .dark-mode .intro-text {
     color: #fff;
+}
+
+/* Album musique style streaming */
+.music-album-header {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+}
+.album-cover-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+    margin-top: 20px; /* Ajoute un petit espace au-dessus de la pochette */
+}
+.album-cover {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.album-copyright {
+    font-size: 0.8em; /* Plus petit */
+    color: #888;
+    margin-top: 0.5em;
+    text-align: center;
+}
+.album-info-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Aligne le bas du bloc avec la pochette */
+    height: 140px; /* Même hauteur que la pochette pour aligner le texte */
+}
+.album-info-col h2 {
+    margin-bottom: 0.5rem;
+}
+.album-artists {
+    font-size: 1em;
+    color: #888;
+    margin-top: auto; /* Place en bas du bloc */
+    margin-bottom: 0.5rem;
+}
+
+.music-tracklist {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+.music-track {
+    display: flex;
+    align-items: center;
+    background: var(--bg-color, #f7f7f7);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    gap: 1.2rem;
+    transition: background 0.3s;
+}
+.track-cover img {
+    width: 54px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+.track-info {
+    flex: 1;
+    min-width: 0;
+}
+.track-title {
+    font-weight: 600;
+    font-size: 1.1em;
+}
+.track-artist {
+    font-size: 0.95em;
+    color: #888;
+}
+.track-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 180px;
+    position: relative; /* Pour la jauge volume */
+}
+.track-actions .volume-slider {
+    width: 60px;
+    vertical-align: middle;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    margin-left: 0.3rem;
+    margin-right: 0.3rem;
+}
+.track-actions .volume-btn:focus + .volume-slider,
+.track-actions .volume-btn:hover + .volume-slider,
+.track-actions .volume-slider:focus,
+.track-actions .volume-slider:hover {
+    opacity: 1;
+    pointer-events: auto;
+}
+.track-actions button,
+.track-actions a.download-btn {
+    background: none;
+    border: none;
+    color: #3498db;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0.3em 0.5em;
+    border-radius: 4px;
+    transition: background 0.15s;
+    outline: none;
+}
+.track-actions button:hover,
+.track-actions a.download-btn:hover {
+    background: rgba(52,152,219,0.08);
+}
+.track-actions .volume-slider {
+    width: 60px;
+    vertical-align: middle;
+}
+@media (max-width: 700px) {
+    .music-album-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.2rem;
+    }
+    .album-cover {
+        width: 100px;
+        height: 100px;
+    }
+    .music-track {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.7rem;
+    }
+    .track-actions {
+        min-width: 0;
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+.dark-mode .music-track {
+    background: #181c27;
+}
+.dark-mode .album-copyright,
+.dark-mode .album-artists,
+.dark-mode .track-artist {
+    color: #aaa;
 }
 
 body,
