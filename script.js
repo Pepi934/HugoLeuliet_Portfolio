@@ -263,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateIntroForMode();
 
     // Music streaming player logic
-    // Music streaming player logic (CORRIGÉ ET COMPLÉTÉ)
     document.querySelectorAll('#glaneurs-musique .music-track').forEach(track => {
         const audio = track.querySelector('.music-player');
         const playBtn = track.querySelector('.play-btn');
@@ -272,7 +271,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const volumeBtn = track.querySelector('.volume-btn');
         const shareBtn = track.querySelector('.share-btn');
 
-        // --- ÉLÉMENTS AJOUTÉS ---
         const progressBar = track.querySelector('.progress-bar');
         const progress = track.querySelector('.progress');
         const progressHandle = track.querySelector('.progress-handle');
@@ -285,36 +283,45 @@ document.addEventListener('DOMContentLoaded', function() {
             const s = Math.floor(sec % 60).toString().padStart(2, '0');
             return `${m}:${s}`;
         }
-        // --- FIN DES ÉLÉMENTS AJOUTÉS ---
-
 
         // Play/pause logic
         playBtn.addEventListener('click', () => {
-            isAlbumPlaying = false;
-            updatePlayAllButtonUI();
-            // Pause all other tracks
-            document.querySelectorAll('#glaneurs-musique .music-player').forEach(a => {
-                if (a !== audio) {
-                    a.pause();
-                    // Pas besoin de remettre à zéro le temps ici, juste pauser
-                    const parent = a.closest('.music-track');
-                    if (parent) {
-                        parent.querySelector('.play-btn').classList.remove('hidden');
-                        parent.querySelector('.pause-btn').classList.add('hidden');
-                    }
+            // Pause all other tracks before playing the new one
+            document.querySelectorAll('#glaneurs-musique .music-player').forEach(otherAudio => {
+                if (otherAudio !== audio) {
+                    otherAudio.pause();
                 }
             });
             audio.play();
         });
+
         pauseBtn.addEventListener('click', () => {
             audio.pause();
-            if (isAlbumPlaying) {
-                isAlbumPlaying = false;
-                updatePlayAllButtonUI();
-            }
         });
 
-        // --- LOGIQUE AJOUTÉE POUR LA PROGRESSION ---
+        // Update UI based on audio events
+        audio.addEventListener('play', () => {
+            playBtn.classList.add('hidden');
+            pauseBtn.classList.remove('hidden');
+            track.classList.add('active-track');
+        });
+
+        audio.addEventListener('pause', () => {
+            pauseBtn.classList.add('hidden');
+            playBtn.classList.remove('hidden');
+            track.classList.remove('active-track');
+        });
+        
+        audio.addEventListener('ended', () => {
+            pauseBtn.classList.add('hidden');
+            playBtn.classList.remove('hidden');
+            track.classList.remove('active-track');
+            progress.style.width = '0%';
+            progressHandle.style.left = '0%';
+            currentTimeEl.textContent = '0:00';
+        });
+
+        // Progress bar logic
         audio.addEventListener('loadedmetadata', () => {
             durationEl.textContent = formatTime(audio.duration);
         });
@@ -324,30 +331,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (audio.duration) {
                 const percent = (audio.currentTime / audio.duration) * 100;
                 progress.style.width = percent + '%';
-                // Le "- 6px" centre le curseur sur la barre
                 progressHandle.style.left = `calc(${percent}% - 6px)`; 
             }
         });
 
-        audio.addEventListener('ended', () => {
-            playBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
-            progress.style.width = '0%';
-            progressHandle.style.left = '0%';
-            currentTimeEl.textContent = '0:00';
-        });
-
-        // Met à jour les icônes play/pause
-        audio.addEventListener('play', () => {
-            playBtn.classList.add('hidden');
-            pauseBtn.classList.remove('hidden');
-        });
-        audio.addEventListener('pause', () => {
-            pauseBtn.classList.add('hidden');
-            playBtn.classList.remove('hidden');
-        });
-
-        // Permet de cliquer sur la barre pour avancer/reculer
+        // Seek functionality
         progressBar.addEventListener('click', (e) => {
             const rect = progressBar.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -356,46 +344,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         let isDragging = false;
-        let wasPlayingBeforeDrag = false; // Pour mémoriser l'état de lecture
+        let wasPlayingBeforeDrag = false;
 
-        // 1. Quand on clique sur le curseur
         progressHandle.addEventListener('mousedown', (e) => {
             isDragging = true;
-            // On mémorise si la musique était en train de jouer
             wasPlayingBeforeDrag = !audio.paused;
-            // On met la musique en pause pour éviter le son haché
             if (wasPlayingBeforeDrag) {
                 audio.pause();
             }
             document.body.style.userSelect = 'none';
         });
 
-        // 2. Quand on bouge la souris
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
-
             const rect = progressBar.getBoundingClientRect();
             let x = e.clientX - rect.left;
             x = Math.max(0, Math.min(x, rect.width));
-            
             const percent = x / rect.width;
-            // On met à jour le temps de l'audio (qui est en pause)
             audio.currentTime = percent * audio.duration;
         });
 
-        // 3. Quand on relâche le clic
         document.addEventListener('mouseup', (e) => {
             if (isDragging) {
                 isDragging = false;
-                // Si la musique jouait avant, on la relance à la nouvelle position
                 if (wasPlayingBeforeDrag) {
                     audio.play();
                 }
                 document.body.style.userSelect = '';
             }
         });
-        // --- FIN DE LA LOGIQUE AJOUTÉE ---
-
 
         // Volume
         volumeSlider.addEventListener('input', () => {
@@ -426,16 +403,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.download-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
+            e.preventDefault();
             const href = btn.getAttribute('href');
             const filename = href.split('/').pop();
-            // Crée un lien temporaire pour forcer le download
             const a = document.createElement('a');
             a.href = href;
-            a.setAttribute('download', filename);
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            e.preventDefault();
         });
     });
 
@@ -463,7 +439,6 @@ document.addEventListener('DOMContentLoaded', function() {
         volumeSlider.addEventListener('mouseleave', () => {
             hideTimeout = setTimeout(hideSlider, 5000);
         });
-        // Affiche aussi la jauge au focus clavier
         volumeBtn.addEventListener('focus', showSlider);
         volumeSlider.addEventListener('focus', showSlider);
         volumeBtn.addEventListener('blur', () => {
@@ -472,78 +447,6 @@ document.addEventListener('DOMContentLoaded', function() {
         volumeSlider.addEventListener('blur', () => {
             hideTimeout = setTimeout(hideSlider, 5000);
         });
-    });
-    // ===========================
-    // LOGIQUE POUR "LIRE L'ALBUM"
-    // ===========================
-    const audioPlayers = Array.from(document.querySelectorAll('#glaneurs-musique .music-player'));
-    const playAllBtn = document.getElementById('play-all-btn');
-    const playAllBtnIcon = playAllBtn.querySelector('i');
-    const playAllBtnText = playAllBtn.querySelector('span');
-    
-    let currentPlayAllIndex = 0;
-    let isAlbumPlaying = false;
-
-    // Met à jour le bouton principal (icône et texte)
-    function updatePlayAllButtonUI() {
-        if (isAlbumPlaying) {
-            playAllBtnIcon.className = 'fas fa-pause';
-            playAllBtnText.textContent = "Mettre en pause";
-        } else {
-            playAllBtnIcon.className = 'fas fa-play';
-            playAllBtnText.textContent = "Lire l'album";
-        }
-    }
-
-    // Joue une piste en fonction de son index dans la liste
-    function playTrackByIndex(index) {
-         document.querySelectorAll('#glaneurs-musique .music-track').forEach(track => {
-        track.classList.remove('active-track');
-    });
-        // Arrête toutes les autres pistes
-        audioPlayers.forEach((audio, i) => {
-            if (i !== index) {
-                audio.pause();
-            }
-        });
-        
-        // Joue la piste cible
-        const targetAudio = audioPlayers[index];
-        targetAudio.closest('.music-track').classList.add('active-track');
-        targetAudio.currentTime = 0;
-        targetAudio.play();
-        isAlbumPlaying = true;
-        currentPlayAllIndex = index;
-        updatePlayAllButtonUI();
-    }
-
-    // Gère le clic sur le bouton "Lire l'album"
-    playAllBtn.addEventListener('click', () => {
-        isAlbumPlaying = !isAlbumPlaying;
-        if (isAlbumPlaying) {
-            playTrackByIndex(currentPlayAllIndex);
-        } else {
-            audioPlayers[currentPlayAllIndex].pause();
-        }
-        updatePlayAllButtonUI();
-    });
-
-    // Ajoute un écouteur à chaque piste pour enchaîner à la fin
-    audioPlayers.forEach((audio, index) => {
-        audio.addEventListener('ended', () => {
-            if (isAlbumPlaying) {
-                currentPlayAllIndex++;
-                if (currentPlayAllIndex < audioPlayers.length) {
-                    playTrackByIndex(currentPlayAllIndex);
-                } else {
-                    // Fin de l'album
-                    isAlbumPlaying = false;
-                    currentPlayAllIndex = 0;
-                    updatePlayAllButtonUI();
-                }
-            }
-        });
-        
     });
 });
 
